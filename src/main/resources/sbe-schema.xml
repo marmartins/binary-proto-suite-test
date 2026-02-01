@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sbe:messageSchema xmlns:sbe="http://fixprotocol.io/2016/sbe"
+                   package="com.tus.binary.suite.sbe"
+                   id="1"
+                   version="0"
+                   semanticVersion="5.2"
+                   description="Market Data Schema for Binary Protocol Suite"
+                   byteOrder="littleEndian">
+    <types>
+        <composite name="messageHeader" description="Message identifiers and length of message root">
+            <type name="blockLength" primitiveType="uint16"/>
+            <type name="templateId" primitiveType="uint16"/>
+            <type name="schemaId" primitiveType="uint16"/>
+            <type name="version" primitiveType="uint16"/>
+        </composite>
+        <composite name="groupSizeEncoding" description="Repeating group dimensions">
+            <type name="blockLength" primitiveType="uint16"/>
+            <type name="numInGroup" primitiveType="uint16"/>
+        </composite>
+        <composite name="varStringEncoding" description="Variable length string">
+            <type name="length" primitiveType="uint32" maxValue="1073741824"/>
+            <type name="varData" primitiveType="uint8" length="0" characterEncoding="UTF-8"/>
+        </composite>
+        <enum name="Side" encodingType="uint8">
+            <validValue name="BID">0</validValue>
+            <validValue name="ASK">1</validValue>
+        </enum>
+        <enum name="UpdateAction" encodingType="uint8">
+            <validValue name="ADD">0</validValue>
+            <validValue name="UPDATE">1</validValue>
+            <validValue name="DELETE">2</validValue>
+        </enum>
+        <type name="Price" primitiveType="int64" description="Price as fixed-point integer"/>
+        <type name="Size" primitiveType="int64" description="Size/Volume"/>
+        <type name="Level" primitiveType="int32" description="Price Level"/>
+        <type name="Timestamp" primitiveType="int64" description="Nanoseconds since epoch"/>
+        <type name="SequenceId" primitiveType="int64"/>
+        <type name="SchemaVersion" primitiveType="int32"/>
+    </types>
+
+    <sbe:message name="MarketData" id="1" description="Market Data Incremental Refresh">
+        <!-- Fixed Fields -->
+        <field name="timestamp" id="2" type="Timestamp"/>
+        <field name="sequenceId" id="3" type="SequenceId"/>
+        <field name="version" id="4" type="SchemaVersion"/>
+        
+        <!-- Repeating Groups -->
+        <group name="bidAskEntries" id="8" dimensionType="groupSizeEncoding">
+            <field name="price" id="9" type="Price"/>
+            <field name="size" id="10" type="Size"/>
+            <field name="level" id="11" type="Level"/>
+            <field name="side" id="12" type="Side"/>
+            <field name="updateAction" id="13" type="UpdateAction"/>
+        </group>
+
+        <!-- Variable Length Data (Must be at the end) -->
+        <data name="messageType" id="1" type="varStringEncoding" description="Message Type"/>
+        <data name="symbol" id="5" type="varStringEncoding"/>
+        <data name="exchange" id="6" type="varStringEncoding"/>
+        <data name="currency" id="7" type="varStringEncoding"/>
+    </sbe:message>
+</sbe:messageSchema>
