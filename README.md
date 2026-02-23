@@ -34,6 +34,37 @@ JMH provides the most accurate microbenchmark measurements with statistical anal
 ### Running JMH Benchmarks
 
 **Step 1: Build the benchmark JAR**
+
+In order to run the benchmark I was required to remove the bellow block of the pom.xml
+```xml
+<plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.tus.binary.suite.Application</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+                    <jvmArguments>
+                        --add-opens java.base/sun.nio.ch=ALL-UNNAMED
+                        --add-opens java.base/java.nio=ALL-UNNAMED
+                        --add-opens java.base/java.util=ALL-UNNAMED
+                        --add-exports java.base/jdk.internal.misc=ALL-UNNAMED
+                        --add-opens java.base/jdk.internal.misc=ALL-UNNAMED
+                        --enable-native-access=ALL-UNNAMED
+                    </jvmArguments>
+				</configuration>
+			</plugin>
+```
+
 ```bash
 mvn clean package -Dmaven.test.skip=true
 ```
@@ -50,6 +81,10 @@ mvn clean package --% -Dmaven.test.skip=true
 
 
 **Step 2: Execute benchmarks**
+
+
+
+
 ```bash
 # In line command (Windows)
 # Make sure to no run in PowerShell as it may misinterpret the args

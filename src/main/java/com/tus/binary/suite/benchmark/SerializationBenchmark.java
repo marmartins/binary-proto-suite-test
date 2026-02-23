@@ -1,6 +1,7 @@
 package com.tus.binary.suite.benchmark;
 
 import com.tus.binary.suite.dto.MarketDataPayload;
+import com.tus.binary.suite.service.ProtobufSerializer;
 import com.tus.binary.suite.service.SbeSerializer;
 import org.openjdk.jmh.annotations.*;
 
@@ -14,12 +15,14 @@ import java.util.concurrent.TimeUnit;
 public class SerializationBenchmark {
 
     private MarketDataPayload payload;
+    private ProtobufSerializer protobufSerializer;
     private SbeSerializer sbeSerializer;
     private byte[] protobufEncoded;
     private byte[] sbeEncoded;
 
     @Setup(Level.Trial)
     public void setup() {
+        protobufSerializer = new ProtobufSerializer();
         sbeSerializer = new SbeSerializer();
 
         payload = new MarketDataPayload(
@@ -31,7 +34,18 @@ public class SerializationBenchmark {
                         new MarketDataPayload.BidAskEntry(24990L, 200L, 2, 0, 0),
                         new MarketDataPayload.BidAskEntry(25020L, 150L, 2, 1, 0)));
 
+        protobufEncoded = protobufSerializer.serialize(payload);
         sbeEncoded = sbeSerializer.serialize(payload);
+    }
+
+    @Benchmark
+    public byte[] protobufSerialize() throws IOException {
+        return protobufSerializer.serialize(payload);
+    }
+
+    @Benchmark
+    public MarketDataPayload protobufDeserialize() throws IOException {
+        return protobufSerializer.deserialize(protobufEncoded);
     }
 
     @Benchmark

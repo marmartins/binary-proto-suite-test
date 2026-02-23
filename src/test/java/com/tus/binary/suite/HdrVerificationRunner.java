@@ -15,6 +15,7 @@ public class HdrVerificationRunner {
         System.out.println("Running " + iterations + " iterations...");
 
         for (int i = 0; i < iterations; i++) {
+            controller.testProtobuf();
             controller.testSbe();
         }
 

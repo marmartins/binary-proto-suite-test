@@ -1,0 +1,56 @@
+syntax = "proto3";
+package com.tus.binary.suite.proto;
+
+option java_multiple_files = true;
+option java_package = "com.tus.binary.suite.proto";
+
+message MarketData {
+  // Header
+  // messageType (string/enum): e.g., "MarketDataIncrementalRefresh"
+  // Using string for flexibility as requested, though Enum is possible.
+  string message_type = 1;
+
+  // timestamp (nanoseconds since epoch)
+  int64 timestamp = 2;
+
+  // sequenceId (monotonically increasing integer)
+  int64 sequence_id = 3;
+
+  // version (schema version)
+  int32 version = 4;
+
+  // Instrument Details (Nested Object)
+  message Instrument {
+    string symbol = 1;
+    string exchange = 2;
+    string currency = 3;
+  }
+  Instrument instrument = 5;
+
+  // Repeating Group: BidAskEntries
+  message BidAskEntry {
+    // price (decimal/fixed-point integer) -> Using int64 to represent fixed point (e.g. multiplied by 10^x)
+    int64 price = 1;
+
+    // size (integer, volume)
+    int64 size = 2;
+
+    // level (integer, e.g., 1 = top of book)
+    int32 level = 3;
+
+    enum Side {
+      BID = 0;
+      ASK = 1;
+    }
+    Side side = 4;
+
+    enum UpdateAction {
+      ADD = 0;
+      UPDATE = 1;
+      DELETE = 2;
+    }
+    UpdateAction update_action = 5;
+  }
+
+  repeated BidAskEntry bid_ask_entries = 6;
+}

@@ -1,6 +1,7 @@
 package com.tus.binary.suite;
 
 import com.tus.binary.suite.dto.MarketDataPayload;
+import com.tus.binary.suite.service.ProtobufSerializer;
 import com.tus.binary.suite.service.ProtocolSerializer;
 import com.tus.binary.suite.service.SbeSerializer;
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,15 @@ import static org.junit.jupiter.api.Assertions.*;
 public class BinaryProtocolTest {
 
     @Autowired
+    private ProtobufSerializer protobufSerializer;
+
+    @Autowired
     private SbeSerializer sbeSerializer;
+
+    @Test
+    public void testProtobufRoundTrip() throws IOException {
+        testRoundTrip(protobufSerializer);
+    }
 
     @Test
     public void testSbeRoundTrip() throws IOException {

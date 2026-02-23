@@ -42,6 +42,13 @@
 			<version>3.8.8</version>
 		</dependency>
 
+        <!-- Protobuf -->
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>3.25.1</version>
+        </dependency>
+
 		<!-- SBE (Simple Binary Encoding) -->
 		<dependency>
 			<groupId>uk.co.real-logic</groupId>
@@ -123,7 +130,23 @@
 					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
-
+            <!-- Protobuf Plugin -->
+            <plugin>
+                <groupId>org.xolstice.maven.plugins</groupId>
+                <artifactId>protobuf-maven-plugin</artifactId>
+                <version>0.6.1</version>
+                <configuration>
+                    <protocArtifact>com.google.protobuf:protoc:3.25.1:exe:${os.detected.classifier}</protocArtifact>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>test-compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 			<!-- SBE Code Generation using Exec Plugin -->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -212,15 +235,23 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>3.4.1</version>
+				<version>3.5.3</version>
 				<executions>
 					<execution>
+                        <id>shade-jar-with-dependencies</id>
 						<phase>package</phase>
 						<goals>
 							<goal>shade</goal>
 						</goals>
 						<configuration>
 							<finalName>benchmarks</finalName>
+							<transformers>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<mainClass>com.tus.binary.suite.benchmark.BenchmarkRunner</mainClass>
+								</transformer>
+							</transformers>
+                            <keepDependenciesWithProvidedScope>true</keepDependenciesWithProvidedScope>
+                            <createDependencyReducedPom>true</createDependencyReducedPom>
 							<filters>
 								<filter>
 									<!-- Shading signed JARs will fail without this. http://stackoverflow.com/questions/999489 -->

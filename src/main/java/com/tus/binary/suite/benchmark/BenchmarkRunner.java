@@ -16,7 +16,7 @@ import java.util.Collection;
 
 public class BenchmarkRunner {
 
-    static void main(String[] args) throws RunnerException, IOException {
+    public static void main(String[] args) throws RunnerException, IOException {
         Options opt = new OptionsBuilder()
                 .include(SerializationBenchmark.class.getSimpleName())
                 .forks(1)

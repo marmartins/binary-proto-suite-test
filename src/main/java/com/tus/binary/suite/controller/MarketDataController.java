@@ -2,6 +2,7 @@ package com.tus.binary.suite.controller;
 
 import com.tus.binary.suite.dto.MarketDataPayload;
 import com.tus.binary.suite.dto.ValidationResult;
+import com.tus.binary.suite.service.ProtobufSerializer;
 import com.tus.binary.suite.service.ProtocolSerializer;
 import com.tus.binary.suite.service.SbeSerializer;
 import org.HdrHistogram.Histogram;
@@ -26,14 +27,38 @@ import java.util.List;
 @RequestMapping("/api/test")
 public class MarketDataController {
 
+    private final ProtocolSerializer protobufSerializer;
     private final ProtocolSerializer sbeSerializer;
 
     // Histograms
     private final Histogram sbeSerializeHist = new Histogram(3);
     private final Histogram sbeDeserializeHist = new Histogram(3);
+    private final Histogram pbSerializeHist = new Histogram(3);
+    private final Histogram pbDeserializeHist = new Histogram(3);
 
     public MarketDataController() {
+        this.protobufSerializer = new ProtobufSerializer();
         this.sbeSerializer = new SbeSerializer();
+    }
+
+    @GetMapping("/protobuf")
+    public ValidationResult testProtobuf() {
+        MarketDataPayload payload = MarketDataPayload.createSample();
+
+        try {
+            long start = System.nanoTime();
+            byte[] bytes = protobufSerializer.serialize(payload);
+            pbSerializeHist.recordValue(System.nanoTime() - start);
+
+            start = System.nanoTime();
+            MarketDataPayload decoded = protobufSerializer.deserialize(bytes);
+            pbDeserializeHist.recordValue(System.nanoTime() - start);
+
+            boolean match = payload.equals(decoded);
+            return new ValidationResult("Protobuf", bytes.length, match, payload.toString(), decoded.toString());
+        } catch (IOException e) {
+            return new ValidationResult("Protobuf", 0, false, e.getMessage(), "");
+        }
     }
 
     @GetMapping("/sbe")
@@ -65,6 +90,8 @@ public class MarketDataController {
         try (PrintWriter writer = new PrintWriter(new FileWriter(baseName))) {
             writer.println("HDR Histogram Report - " + timestamp);
             writer.println("==================================================");
+            printHistogram(writer, "Protobuf Serialize", pbSerializeHist);
+            printHistogram(writer, "Protobuf Deserialize", pbDeserializeHist);
             printHistogram(writer, "SBE Serialize", sbeSerializeHist);
             printHistogram(writer, "SBE Deserialize", sbeDeserializeHist);
         }
@@ -75,6 +102,8 @@ public class MarketDataController {
         chart.getStyler().setYAxisLogarithmic(true);
         chart.getStyler().setLegendVisible(true);
 
+        addSeriesToChart(chart, "Proto Ser", pbSerializeHist);
+        addSeriesToChart(chart, "Proto Deser", pbDeserializeHist);
         addSeriesToChart(chart, "SBE Ser", sbeSerializeHist);
         addSeriesToChart(chart, "SBE Deser", sbeDeserializeHist);
 
