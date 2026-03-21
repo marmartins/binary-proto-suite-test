@@ -1,6 +1,7 @@
 package com.tus.binary.suite.benchmark;
 
 import com.tus.binary.suite.dto.MarketDataPayload;
+import com.tus.binary.suite.service.FlatBuffersSerializer;
 import com.tus.binary.suite.service.ProtobufSerializer;
 import com.tus.binary.suite.service.SbeSerializer;
 import org.openjdk.jmh.annotations.*;
@@ -16,13 +17,16 @@ public class SerializationBenchmark {
 
     private MarketDataPayload payload;
     private ProtobufSerializer protobufSerializer;
+    private FlatBuffersSerializer flatBuffersSerializer;
     private SbeSerializer sbeSerializer;
     private byte[] protobufEncoded;
+    private byte[] flatBuffersEncoded;
     private byte[] sbeEncoded;
 
     @Setup(Level.Trial)
-    public void setup() {
+    public void setup() throws Exception {
         protobufSerializer = new ProtobufSerializer();
+        flatBuffersSerializer = new FlatBuffersSerializer();
         sbeSerializer = new SbeSerializer();
 
         payload = new MarketDataPayload(
@@ -35,6 +39,7 @@ public class SerializationBenchmark {
                         new MarketDataPayload.BidAskEntry(25020L, 150L, 2, 1, 0)));
 
         protobufEncoded = protobufSerializer.serialize(payload);
+        flatBuffersEncoded = flatBuffersSerializer.serialize(payload);
         sbeEncoded = sbeSerializer.serialize(payload);
     }
 
@@ -56,5 +61,15 @@ public class SerializationBenchmark {
     @Benchmark
     public MarketDataPayload sbeDeserialize() throws IOException {
         return sbeSerializer.deserialize(sbeEncoded);
+    }
+
+    @Benchmark
+    public byte[] flatBuffersSerialize() throws IOException {
+        return flatBuffersSerializer.serialize(payload);
+    }
+
+    @Benchmark
+    public MarketDataPayload flatBuffersDeserialize() throws IOException {
+        return flatBuffersSerializer.deserialize(flatBuffersEncoded);
     }
 }

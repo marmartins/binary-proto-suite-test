@@ -176,6 +176,7 @@
               </transformers>
               <keepDependenciesWithProvidedScope>true</keepDependenciesWithProvidedScope>
               <createDependencyReducedPom>true</createDependencyReducedPom>
+              <finalName>benchmarks</finalName>
               <filters>
                 <filter>
                   <artifact>*:*</artifact>
@@ -215,6 +216,12 @@
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
       <version>3.25.1</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.flatbuffers</groupId>
+      <artifactId>flatbuffers-java</artifactId>
+      <version>23.5.26</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

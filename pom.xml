@@ -49,6 +49,13 @@
             <version>3.25.1</version>
         </dependency>
 
+		<!-- FlatBuffers -->
+		<dependency>
+			<groupId>com.google.flatbuffers</groupId>
+			<artifactId>flatbuffers-java</artifactId>
+			<version>23.5.26</version>
+		</dependency>
+
 		<!-- SBE (Simple Binary Encoding) -->
 		<dependency>
 			<groupId>uk.co.real-logic</groupId>
@@ -106,6 +113,8 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
+<!--					This line should be added before to run the benchmarker, only for benchmarker-->
+<!--					<skip>true</skip>-->
                     <jvmArguments>
                         --add-opens java.base/sun.nio.ch=ALL-UNNAMED
                         --add-opens java.base/java.nio=ALL-UNNAMED
@@ -250,8 +259,9 @@
 									<mainClass>com.tus.binary.suite.benchmark.BenchmarkRunner</mainClass>
 								</transformer>
 							</transformers>
-                            <keepDependenciesWithProvidedScope>true</keepDependenciesWithProvidedScope>
-                            <createDependencyReducedPom>true</createDependencyReducedPom>
+							<keepDependenciesWithProvidedScope>true</keepDependenciesWithProvidedScope>
+							<createDependencyReducedPom>true</createDependencyReducedPom>
+							<finalName>benchmarks</finalName>
 							<filters>
 								<filter>
 									<!-- Shading signed JARs will fail without this. http://stackoverflow.com/questions/999489 -->

@@ -2,6 +2,7 @@ package com.tus.binary.suite.controller;
 
 import com.tus.binary.suite.dto.MarketDataPayload;
 import com.tus.binary.suite.dto.ValidationResult;
+import com.tus.binary.suite.service.FlatBuffersSerializer;
 import com.tus.binary.suite.service.ProtobufSerializer;
 import com.tus.binary.suite.service.ProtocolSerializer;
 import com.tus.binary.suite.service.SbeSerializer;
@@ -29,16 +30,20 @@ public class MarketDataController {
 
     private final ProtocolSerializer protobufSerializer;
     private final ProtocolSerializer sbeSerializer;
+    private final ProtocolSerializer flatBuffersSerializer;
 
     // Histograms
     private final Histogram sbeSerializeHist = new Histogram(3);
     private final Histogram sbeDeserializeHist = new Histogram(3);
     private final Histogram pbSerializeHist = new Histogram(3);
     private final Histogram pbDeserializeHist = new Histogram(3);
+    private final Histogram fbSerializeHist = new Histogram(3);
+    private final Histogram fbDeserializeHist = new Histogram(3);
 
     public MarketDataController() {
         this.protobufSerializer = new ProtobufSerializer();
         this.sbeSerializer = new SbeSerializer();
+        this.flatBuffersSerializer = new FlatBuffersSerializer();
     }
 
     @GetMapping("/protobuf")
@@ -81,6 +86,26 @@ public class MarketDataController {
         }
     }
 
+    @GetMapping("/flatbuffers")
+    public ValidationResult testFlatBuffers() {
+        MarketDataPayload payload = MarketDataPayload.createSample();
+
+        try {
+            long start = System.nanoTime();
+            byte[] bytes = flatBuffersSerializer.serialize(payload);
+            fbSerializeHist.recordValue(System.nanoTime() - start);
+
+            start = System.nanoTime();
+            MarketDataPayload decoded = flatBuffersSerializer.deserialize(bytes);
+            fbDeserializeHist.recordValue(System.nanoTime() - start);
+
+            boolean match = payload.equals(decoded);
+            return new ValidationResult("FlatBuffers", bytes.length, match, payload.toString(), decoded.toString());
+        } catch (IOException e) {
+            return new ValidationResult("FlatBuffers", 0, false, e.getMessage(), "");
+        }
+    }
+
     @GetMapping("/hdr/report")
     public String generateHdrReport() throws IOException {
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
@@ -94,6 +119,8 @@ public class MarketDataController {
             printHistogram(writer, "Protobuf Deserialize", pbDeserializeHist);
             printHistogram(writer, "SBE Serialize", sbeSerializeHist);
             printHistogram(writer, "SBE Deserialize", sbeDeserializeHist);
+            printHistogram(writer, "FlatBuffers Serialize", fbSerializeHist);
+            printHistogram(writer, "FlatBuffers Deserialize", fbDeserializeHist);
         }
 
         // 2. Generate Plot
@@ -106,6 +133,8 @@ public class MarketDataController {
         addSeriesToChart(chart, "Proto Deser", pbDeserializeHist);
         addSeriesToChart(chart, "SBE Ser", sbeSerializeHist);
         addSeriesToChart(chart, "SBE Deser", sbeDeserializeHist);
+        addSeriesToChart(chart, "FB Ser", fbSerializeHist);
+        addSeriesToChart(chart, "FB Deser", fbDeserializeHist);
 
         String pngFileName = baseName.replace(".hgrm", ".png");
         BitmapEncoder.saveBitmap(chart, pngFileName, BitmapEncoder.BitmapFormat.PNG);

@@ -95,7 +95,40 @@ java --add-opens java.base/sun.nio.ch=ALL-UNNAMED ^
      --add-opens java.base/jdk.internal.misc=ALL-UNNAMED ^
      --enable-native-access=ALL-UNNAMED ^
      -cp target/benchmarks.jar com.tus.binary.suite.benchmark.BenchmarkRunner
+     
+# In GitBash 
+java --add-opens java.base/sun.nio.ch=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-exports java.base/jdk.internal.misc=ALL-UNNAMED --add-opens java.base/jdk.internal.misc=ALL-UNNAMED --enable-native-access=ALL-UNNAMED -jar target/benchmarks.jar
 ```
+**Note:** If you see the error
+
+```bash
+Error: Could not find or load main class com.tus.binary.suite.benchmark.BenchmarkRunner
+Caused by: java.lang.ClassNotFoundException: com.tus.binary.suite.benchmark.BenchmarkRunner
+```
+
+**CAUSE**
+The reason you are seeing a BOOT-INF folder is that the Spring Boot Maven Plugin is also active in your build. This plugin "repackages" your JAR into a Spring-specific format where classes are moved into BOOT-INF/classes, which the standard Java runtime cannot find unless it is launched using the Spring Boot Loader.
+When you use the maven-shade-plugin, you typically want a "flat" fat JAR where classes are in the root of the JAR. The Spring Boot plugin is essentially overwriting or conflicting with the Shade plugin's output.
+
+How to Fix the Error
+**XML**
+```xml
+<plugin>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-maven-plugin</artifactId>
+    <configuration>
+        <skip>true</skip>
+    </configuration>
+</plugin>
+```
+
+**Go to** spring-boot-maven-plugin configuration and add the skip parameter to true, this will prevent the plugin from repackaging the JAR and allow the maven-shade-plugin to create a standard executable JAR that can be run with the java -jar command.
+
+```xml
+        <skip>true</skip>
+```
+
+Remove the XML above and build the component again to run the application.
 
 **Note:** JVM arguments are required for Agrona (SBE dependency) to access internal APIs.
 
@@ -135,7 +168,13 @@ HDR Histogram tracks latency percentiles for real-world HTTP endpoint calls.
 #$env:MAVEN_OPTS="--add-opens java.base/sun.nio.ch=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-exports java.base/jdk.internal.misc=ALL-UNNAMED --add-opens java.base/jdk.internal.misc=ALL-UNNAMED --enable-native-access=ALL-UNNAMED"
 #mvn test-compile exec:java -Dexec.mainClass=com.tus.binary.suite.HdrVerificationRunner -Dexec.classpathScope=test
 
+#I could run this line in IntelliJ Terminal, it not worked in GitBash
+#PowerShell
 $env:MAVEN_OPTS="--add-opens java.base/sun.nio.ch=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-exports java.base/jdk.internal.misc=ALL-UNNAMED --add-opens java.base/jdk.internal.misc=ALL-UNNAMED --enable-native-access=ALL-UNNAMED"; mvn test-compile exec:java "-Dexec.mainClass=com.tus.binary.suite.HdrVerificationRunner" "-Dexec.classpathScope=test"
+
+#GitBash
+MAVEN_OPTS="--add-opens java.base/sun.nio.ch=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-exports java.base/jdk.internal.misc=ALL-UNNAMED --add-opens java.base/jdk.internal.misc=ALL-UNNAMED --enable-native-access=ALL-UNNAMED" mvn test-compile exec:java "-Dexec.mainClass=com.tus.binary.suite.HdrVerificationRunner" "-Dexec.classpathScope=test"
+
 ```
 
 **Option B: Run Spring Boot App and Test Manually**

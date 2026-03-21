@@ -1,0 +1,37 @@
+namespace com.tus.binary.suite.fbs;
+
+enum Side : byte {
+  BID = 0,
+  ASK = 1
+}
+
+enum UpdateAction : byte {
+  ADD = 0,
+  UPDATE = 1,
+  DELETE = 2
+}
+
+table Instrument {
+  symbol: string;
+  exchange: string;
+  currency: string;
+}
+
+table BidAskEntry {
+  price: long;
+  size: long;
+  level: int;
+  side: Side;
+  update_action: UpdateAction;
+}
+
+table MarketData {
+  message_type: string;
+  timestamp: long;
+  sequence_id: long;
+  version: int;
+  instrument: Instrument;
+  bid_ask_entries: [BidAskEntry];
+}
+
+root_type MarketData;
