@@ -18,6 +18,7 @@ public class HdrVerificationRunner {
             controller.testProtobuf();
             controller.testSbe();
             controller.testFlatBuffers();
+            controller.testAvro();
         }
 
         System.out.println("Generating Report...");
