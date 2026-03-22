@@ -2,10 +2,7 @@ package com.tus.binary.suite.controller;
 
 import com.tus.binary.suite.dto.MarketDataPayload;
 import com.tus.binary.suite.dto.ValidationResult;
-import com.tus.binary.suite.service.FlatBuffersSerializer;
-import com.tus.binary.suite.service.ProtobufSerializer;
-import com.tus.binary.suite.service.ProtocolSerializer;
-import com.tus.binary.suite.service.SbeSerializer;
+import com.tus.binary.suite.service.*;
 import org.HdrHistogram.Histogram;
 import org.knowm.xchart.BitmapEncoder;
 import org.knowm.xchart.XYChart;
@@ -31,6 +28,7 @@ public class MarketDataController {
     private final ProtocolSerializer protobufSerializer;
     private final ProtocolSerializer sbeSerializer;
     private final ProtocolSerializer flatBuffersSerializer;
+    private final ProtocolSerializer avroSerializer;
 
     // Histograms
     private final Histogram sbeSerializeHist = new Histogram(3);
@@ -39,11 +37,14 @@ public class MarketDataController {
     private final Histogram pbDeserializeHist = new Histogram(3);
     private final Histogram fbSerializeHist = new Histogram(3);
     private final Histogram fbDeserializeHist = new Histogram(3);
+    private final Histogram avroSerializeHist = new Histogram(3);
+    private final Histogram avroDeserializeHist = new Histogram(3);
 
     public MarketDataController() {
         this.protobufSerializer = new ProtobufSerializer();
         this.sbeSerializer = new SbeSerializer();
         this.flatBuffersSerializer = new FlatBuffersSerializer();
+        this.avroSerializer = new AvroSerializer();
     }
 
     @GetMapping("/protobuf")
@@ -106,6 +107,25 @@ public class MarketDataController {
         }
     }
 
+    @GetMapping("/avro")
+    public ValidationResult testAvro() {
+        MarketDataPayload payload = MarketDataPayload.createSample();
+        try {
+            long start = System.nanoTime();
+            byte[] bytes = avroSerializer.serialize(payload);
+            avroSerializeHist.recordValue(System.nanoTime() - start);
+
+            start = System.nanoTime();
+            MarketDataPayload decoded = avroSerializer.deserialize(bytes);
+            avroDeserializeHist.recordValue(System.nanoTime() - start);
+
+            boolean match = payload.equals(decoded);
+            return new ValidationResult("Avro", bytes.length, match, payload.toString(), decoded.toString());
+        } catch (IOException e) {
+            return new ValidationResult("Avro", 0, false, e.getMessage(), "");
+        }
+    }
+
     @GetMapping("/hdr/report")
     public String generateHdrReport() throws IOException {
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
@@ -121,6 +141,8 @@ public class MarketDataController {
             printHistogram(writer, "SBE Deserialize", sbeDeserializeHist);
             printHistogram(writer, "FlatBuffers Serialize", fbSerializeHist);
             printHistogram(writer, "FlatBuffers Deserialize", fbDeserializeHist);
+            printHistogram(writer, "Avro Serialize",   avroSerializeHist);
+            printHistogram(writer, "Avro Deserialize", avroDeserializeHist);
         }
 
         // 2. Generate Plot
@@ -135,6 +157,8 @@ public class MarketDataController {
         addSeriesToChart(chart, "SBE Deser", sbeDeserializeHist);
         addSeriesToChart(chart, "FB Ser", fbSerializeHist);
         addSeriesToChart(chart, "FB Deser", fbDeserializeHist);
+        addSeriesToChart(chart, "Avro Ser",   avroSerializeHist);
+        addSeriesToChart(chart, "Avro Deser", avroDeserializeHist);
 
         String pngFileName = baseName.replace(".hgrm", ".png");
         BitmapEncoder.saveBitmap(chart, pngFileName, BitmapEncoder.BitmapFormat.PNG);

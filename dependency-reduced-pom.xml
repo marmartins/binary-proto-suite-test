@@ -42,6 +42,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
         <configuration>
+          <skip>true</skip>
           <jvmArguments>--add-opens java.base/sun.nio.ch=ALL-UNNAMED
                         --add-opens java.base/java.nio=ALL-UNNAMED
                         --add-opens java.base/java.util=ALL-UNNAMED
@@ -140,6 +141,7 @@
               <sources>
                 <source>${project.build.directory}/generated-sources/sbe</source>
                 <source>${project.build.directory}/generated-sources/protobuf/java</source>
+                <source>${project.build.directory}/generated-sources/avro</source>
               </sources>
             </configuration>
           </execution>
@@ -156,6 +158,24 @@
 						--add-opens java.base/jdk.internal.misc=ALL-UNNAMED
 						--enable-native-access=ALL-UNNAMED</argLine>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.avro</groupId>
+        <artifactId>avro-maven-plugin</artifactId>
+        <version>1.11.3</version>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>schema</goal>
+            </goals>
+            <configuration>
+              <sourceDirectory>${project.basedir}/src/main/avro</sourceDirectory>
+              <outputDirectory>${project.build.directory}/generated-sources/avro</outputDirectory>
+              <stringType>String</stringType>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <artifactId>maven-shade-plugin</artifactId>
@@ -307,6 +327,12 @@
           <groupId>org.xmlunit</groupId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.avro</groupId>
+      <artifactId>avro</artifactId>
+      <version>1.11.3</version>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
   <properties>

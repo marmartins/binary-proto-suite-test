@@ -1,0 +1,43 @@
+{
+  "namespace": "com.tus.binary.suite.avro",
+  "type": "record",
+  "name": "MarketData",
+  "fields": [
+    { "name": "messageType", "type": "string" },
+    { "name": "timestamp",   "type": "long"   },
+    { "name": "sequenceId",  "type": "long"   },
+    { "name": "version",     "type": "int"    },
+    {
+      "name": "instrument",
+      "type": {
+        "type":      "record",
+        "name":      "Instrument",
+        "namespace": "com.tus.binary.suite.avro",
+        "fields": [
+          { "name": "symbol",   "type": "string" },
+          { "name": "exchange", "type": "string" },
+          { "name": "currency", "type": "string" }
+        ]
+      }
+    },
+    {
+      "name": "bidAskEntries",
+      "type": {
+        "type": "array",
+        "items": {
+          "type":      "record",
+          "name":      "BidAskEntry",
+          "namespace": "com.tus.binary.suite.avro",
+          "fields": [
+            { "name": "price",        "type": "long" },
+            { "name": "size",         "type": "long" },
+            { "name": "level",        "type": "int"  },
+            { "name": "side",         "type": "int"  },
+            { "name": "updateAction", "type": "int"  }
+          ]
+        },
+        "default": []
+      }
+    }
+  ]
+}
