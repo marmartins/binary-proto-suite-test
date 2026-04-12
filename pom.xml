@@ -56,6 +56,13 @@
 			<version>23.5.26</version>
 		</dependency>
 
+		<!-- Apache Avro -->
+		<dependency>
+			<groupId>org.apache.avro</groupId>
+			<artifactId>avro</artifactId>
+			<version>1.11.3</version>
+		</dependency>
+
 		<!-- SBE (Simple Binary Encoding) -->
 		<dependency>
 			<groupId>uk.co.real-logic</groupId>
@@ -156,6 +163,25 @@
                     </execution>
                 </executions>
             </plugin>
+			<!-- Avro Plugin -->
+			<plugin>
+				<groupId>org.apache.avro</groupId>
+				<artifactId>avro-maven-plugin</artifactId>
+				<version>1.11.3</version>
+				<executions>
+					<execution>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>schema</goal>
+						</goals>
+						<configuration>
+							<sourceDirectory>${project.basedir}/src/main/avro</sourceDirectory>
+							<outputDirectory>${project.build.directory}/generated-sources/avro</outputDirectory>
+							<stringType>String</stringType>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<!-- SBE Code Generation using Exec Plugin -->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -220,6 +246,7 @@
 							<sources>
 								<source>${project.build.directory}/generated-sources/sbe</source>
 								<source>${project.build.directory}/generated-sources/protobuf/java</source>
+								<source>${project.build.directory}/generated-sources/avro</source>
 							</sources>
 						</configuration>
 					</execution>

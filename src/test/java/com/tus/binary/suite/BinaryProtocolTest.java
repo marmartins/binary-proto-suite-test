@@ -4,6 +4,7 @@ import com.tus.binary.suite.dto.MarketDataPayload;
 import com.tus.binary.suite.service.ProtobufSerializer;
 import com.tus.binary.suite.service.ProtocolSerializer;
 import com.tus.binary.suite.service.SbeSerializer;
+import com.tus.binary.suite.service.AvroSerializer;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,6 +23,9 @@ public class BinaryProtocolTest {
     @Autowired
     private SbeSerializer sbeSerializer;
 
+    @Autowired
+    private AvroSerializer avroSerializer;
+
     @Test
     public void testProtobufRoundTrip() throws IOException {
         testRoundTrip(protobufSerializer);
@@ -30,6 +34,11 @@ public class BinaryProtocolTest {
     @Test
     public void testSbeRoundTrip() throws IOException {
         testRoundTrip(sbeSerializer);
+    }
+
+    @Test
+    public void testAvroRoundTrip() throws IOException {
+        testRoundTrip(avroSerializer);
     }
 
     private void testRoundTrip(ProtocolSerializer serializer) throws IOException {

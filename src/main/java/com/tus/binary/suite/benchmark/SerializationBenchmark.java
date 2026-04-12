@@ -4,6 +4,7 @@ import com.tus.binary.suite.dto.MarketDataPayload;
 import com.tus.binary.suite.service.FlatBuffersSerializer;
 import com.tus.binary.suite.service.ProtobufSerializer;
 import com.tus.binary.suite.service.SbeSerializer;
+import com.tus.binary.suite.service.AvroSerializer;
 import org.openjdk.jmh.annotations.*;
 
 import java.io.IOException;
@@ -19,15 +20,18 @@ public class SerializationBenchmark {
     private ProtobufSerializer protobufSerializer;
     private FlatBuffersSerializer flatBuffersSerializer;
     private SbeSerializer sbeSerializer;
+    private AvroSerializer avroSerializer;
     private byte[] protobufEncoded;
     private byte[] flatBuffersEncoded;
     private byte[] sbeEncoded;
+    private byte[] avroEncoded;
 
     @Setup(Level.Trial)
     public void setup() throws Exception {
         protobufSerializer = new ProtobufSerializer();
         flatBuffersSerializer = new FlatBuffersSerializer();
         sbeSerializer = new SbeSerializer();
+        avroSerializer = new AvroSerializer();
 
         payload = new MarketDataPayload(
                 new MarketDataPayload.Header("MarketDataIncrementalRefresh", 1678899887123L, 1001L, 1),
@@ -41,6 +45,7 @@ public class SerializationBenchmark {
         protobufEncoded = protobufSerializer.serialize(payload);
         flatBuffersEncoded = flatBuffersSerializer.serialize(payload);
         sbeEncoded = sbeSerializer.serialize(payload);
+        avroEncoded = avroSerializer.serialize(payload);
     }
 
     @Benchmark
@@ -71,5 +76,15 @@ public class SerializationBenchmark {
     @Benchmark
     public MarketDataPayload flatBuffersDeserialize() throws IOException {
         return flatBuffersSerializer.deserialize(flatBuffersEncoded);
+    }
+
+    @Benchmark
+    public byte[] avroSerialize() throws IOException {
+        return avroSerializer.serialize(payload);
+    }
+
+    @Benchmark
+    public MarketDataPayload avroDeserialize() throws IOException {
+        return avroSerializer.deserialize(avroEncoded);
     }
 }

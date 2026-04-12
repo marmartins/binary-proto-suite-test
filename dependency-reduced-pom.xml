@@ -79,6 +79,24 @@
         </configuration>
       </plugin>
       <plugin>
+        <groupId>org.apache.avro</groupId>
+        <artifactId>avro-maven-plugin</artifactId>
+        <version>1.11.3</version>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>schema</goal>
+            </goals>
+            <configuration>
+              <sourceDirectory>${project.basedir}/src/main/avro</sourceDirectory>
+              <outputDirectory>${project.build.directory}/generated-sources/avro</outputDirectory>
+              <stringType>String</stringType>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
         <version>3.1.0</version>
@@ -140,6 +158,7 @@
               <sources>
                 <source>${project.build.directory}/generated-sources/sbe</source>
                 <source>${project.build.directory}/generated-sources/protobuf/java</source>
+                <source>${project.build.directory}/generated-sources/avro</source>
               </sources>
             </configuration>
           </execution>
@@ -222,6 +241,12 @@
       <groupId>com.google.flatbuffers</groupId>
       <artifactId>flatbuffers-java</artifactId>
       <version>23.5.26</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.avro</groupId>
+      <artifactId>avro</artifactId>
+      <version>1.11.3</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
